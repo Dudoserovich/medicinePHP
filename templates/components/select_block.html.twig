@@ -1,0 +1,25 @@
+{% block select_block %}
+<div class="select-block d-flex">
+    {% for key, selectArray in selectsArray %}
+        <div>
+            <label>{{ key }}</label>
+            <select class="custom-select form-select form-select-lg mb-3"
+                    data-mdb-filter="true"
+            >
+                <option>
+
+                </option>
+                {% for key, selectObj in selectArray %}
+                    <option>
+                        {% if selectObj.date is defined %}
+                            {{ selectObj.date }}
+                        {% else %}
+                            {{ selectObj.getName }}
+                        {% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

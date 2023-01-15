@@ -1,0 +1,82 @@
+{% block btn_matrix %}
+    <div class="btn-group btn-matrix">
+        {% if doctors|length > 0 %}
+            <div class="doctors columns-name"
+                 key={{ doctors|first.getId }}
+                 row-key="1"
+                 column-key='2'
+            >
+                {{ doctors|first.getFullName }}
+            </div>
+        {% endif %}
+
+        {% for key, doctor in doctors|slice(1, doctors|length) %}
+            <div class="doctors columns-name"
+                 key={{ doctor.getId }}
+                 row-key="1"
+                 column-key={{ key+3 }}
+            >
+                {{ doctor.getFullName }}
+            </div>
+        {% endfor %}
+
+        {% if doctors|length > 0 %}
+            {% for key, day in days %}
+                <div class="days rows-name"
+                     row-key={{ key+2 }}
+                     column-key="1"
+                >
+                    {{ day.date }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% for day_key, day in days %}
+            {% for doctor_key, doctor in doctors %}
+                <button style="
+                        grid-row-start: {{ day_key+2 }};
+                        grid-column-start: {{ doctor_key+2 }};
+                        "
+                        type="button"
+                        class="btn btn-default"
+                        row-key={{ day_key+2 }}
+                        column-key={{ doctor_key+2 }}
+                >
+                    {% for day_doc in matrix %}
+                        {% if day_doc.full_name == doctor.getFullName and day.date ==  day_doc.date %}
+                            {{ text_selected }}
+                            {#                            {% else %} #}
+                            {#                                {{ "Свободно" }} #}
+                        {% endif %}
+                    {% endfor %}
+                </button>
+            {% endfor %}
+        {% endfor %}
+    </div>
+
+    <style>
+        .btn-group {
+            grid-template-columns: auto repeat({{ doctors|length }}, 1fr);
+            grid-template-rows: 1fr repeat({{ days|length }}, 1fr);
+        }
+    </style>
+
+    {% block javascripts %}
+        <script src="{{ asset('js/schedule.js') }}"></script>
+
+        <script>
+            // Задание цвета всем дням, в которые работают
+            let btns = document.querySelectorAll('.btn')
+            btns.forEach((btn) => {
+                let textBtn = btn.textContent.trim()
+                if (textBtn === '{{ text_selected }}') {
+                    btn.classList.remove('btn-default');
+                    btn.classList.add('btn-danger');
+                }
+                // else {
+                //     btn.textContent = 'Свободно'
+                // }
+            })
+        </script>
+    {% endblock %}
+{% endblock %}

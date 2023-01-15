@@ -1,0 +1,23 @@
+.container {
+    font-size: 15px !important;
+}
+
+.custom-select {
+    /*width: auto;*/
+    display: flex;
+    flex-direction: column;
+}
+
+.select-block {
+    justify-content: center;
+}
+
+.select-block > * {
+    text-align-last: center;
+    margin-right: 10px;
+}
+
+span.form-error-icon.badge.badge-danger.text-uppercase {
+    width: 0;
+    padding: 0;
+}

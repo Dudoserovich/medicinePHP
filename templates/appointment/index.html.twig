@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Запись на приём{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/schedule.css') }}">
+{% endblock %}
+
+{% block body %}
+    <body>
+    <div class="container">
+        <h1>Запись на приём</h1>
+
+        {% include 'components/select_block.html.twig' with { 'selectsArray': specs } %}
+
+        {% include 'components/btn_matrix.html.twig' with { 'text_selected': 'Занято' } %}
+
+    </div>
+
+    <style>
+        .select-block {
+            justify-content: start;
+        }
+    </style>
+
+    </body>
+
+{% endblock %}

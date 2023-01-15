@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Расписание{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/schedule.css') }}">
+{% endblock %}
+
+{% block body %}
+    <body>
+    <div class="container">
+        <h1>Расписание</h1>
+
+        {% include 'components/select_block.html.twig' %}
+
+        {% include 'components/btn_matrix.html.twig' with { 'text_selected': 'Работает' } %}
+
+        {% if doctors|length > 0 and days|length > 0 %}
+            <div class="footer-group-btn">
+                <button class="btn btn-success" onclick="get_all_selected()">
+                    OK
+                </button>
+            </div>
+        {% endif %}
+    </div>
+
+    </body>
+
+{% endblock %}
