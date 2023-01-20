@@ -1,25 +1,50 @@
 {% block select_block %}
-<div class="select-block d-flex">
-    {% for key, selectArray in selectsArray %}
-        <div>
-            <label>{{ key }}</label>
-            <select class="custom-select form-select form-select-lg mb-3"
-                    data-mdb-filter="true"
-            >
-                <option>
+    {% if currSelects is defined %}
+        {% set keys_select = currSelects|keys %}
+        <div class="select-block d-flex">
+            {% for arr_key, selectArray in selectsArray %}
+                <div>
+                    <label>{{ arr_key }}</label>
+                    <select class="custom-select form-select form-select-lg mb-3"
+                            data-mdb-filter="true"
+                            name="{{ arr_key }}"
+                            data-action={{ currentPath }}
+                    >
+                        <option>
 
-                </option>
-                {% for key, selectObj in selectArray %}
-                    <option>
-                        {% if selectObj.date is defined %}
-                            {{ selectObj.date }}
-                        {% else %}
-                            {{ selectObj.getName }}
-                        {% endif %}
-                    </option>
-                {% endfor %}
-            </select>
+                        </option>
+                        {% for key, selectObj in selectArray %}
+                            <option
+                                    {% if selectObj.date is defined %}
+                                    {% if arr_key in keys_select and selectObj.date == currSelects[arr_key] %}
+                            selected
+                                    {% endif %}>
+                                {% else %}
+                                    {% if arr_key in keys_select and selectObj.getName == currSelects[arr_key] %}
+                                        selected
+                                    {% endif %}>
+                                {% endif %}
+                                {% if selectObj.date is defined %}
+                                    {{ selectObj.date }}
+                                    {% if selectObj.option is defined %}
+                                        ({{ selectObj.option }})
+                                    {% endif %}
+                                {% else %}
+                                    {{ selectObj.getName }}
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endfor %}
         </div>
-    {% endfor %}
-</div>
+    {% endif %}
+
+    {% block javascripts %}
+        <script src="{{ asset('js/select_block.js') }}"></script>
+
+        <script src="https://code.jquery.com/jquery-3.6.3.min.js"
+                integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+
+    {% endblock %}
 {% endblock %}

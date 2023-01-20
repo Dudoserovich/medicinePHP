@@ -13,7 +13,8 @@
 
         {% include 'components/select_block.html.twig' %}
 
-        {% include 'components/btn_matrix.html.twig' with { 'text_selected': 'Работает' } %}
+        {% include 'components/btn_matrix.html.twig'
+            with { 'text_selected': 'Работает', 'select_cols_rows': true } %}
 
         {% if doctors|length > 0 and days|length > 0 %}
             <div class="footer-group-btn">
@@ -25,5 +26,19 @@
     </div>
 
     </body>
+
+    {% block javascripts %}
+        <script src="{{ asset('js/schedule.js') }}"></script>
+    {% endblock %}
+
+    <style>
+        .btn-matrix > .rows-name:hover, .columns-name:hover {
+            background-color: #73e59d;
+        }
+
+        .btn-matrix > .doctors, .doctors:first-child, .days {
+            cursor: pointer;
+        }
+    </style>
 
 {% endblock %}

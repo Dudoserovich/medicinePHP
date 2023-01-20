@@ -19,10 +19,6 @@
     align-self: center;
 }
 
-.btn-matrix > .rows-name:hover, .columns-name:hover {
-    background-color: #73e59d;
-}
-
 .btn-matrix:first-child {
     border-right: 1px solid #f00;
 }
@@ -30,7 +26,6 @@
 /*Стили всех названий колонок*/
 .btn-matrix > .doctors {
     justify-self: center;
-    cursor: pointer;
 
     margin-bottom: 10px;
     margin-right: 10px;
@@ -39,7 +34,6 @@
 /*Стили всех названий строк*/
 .btn-matrix > .days {
     grid-column-start: 1;
-    cursor: pointer;
 
     margin-right: 10px;
 }
@@ -48,7 +42,6 @@
 .btn-matrix > .doctors:first-child {
     grid-column-start: 2;
     justify-self: center;
-    cursor: pointer;
 }
 
 /*Фиксим длину первой кнопки*/

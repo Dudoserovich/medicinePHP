@@ -46,10 +46,16 @@ class DoctorRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('d')
             ->orderBy('d.full_name', 'ASC')
-            ->setMaxResults(10)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
+    }
+
+    public function findAllBySpecOrderBy(): array
+    {
+        return $this->createQueryBuilder('d')
+            ->orderBy('d.full_name', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
 //    /**

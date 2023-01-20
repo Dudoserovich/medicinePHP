@@ -21,3 +21,8 @@ span.form-error-icon.badge.badge-danger.text-uppercase {
     width: 0;
     padding: 0;
 }
+
+.disabled-button {
+    pointer-events: none;
+    opacity: 0.4;
+}

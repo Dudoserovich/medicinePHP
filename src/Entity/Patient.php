@@ -82,6 +82,11 @@ class Patient
         return $this;
     }
 
+    public function getSex(): bool
+    {
+        return $this->sex;
+    }
+
     public function getBirthday(): ?\DateTimeInterface
     {
         return $this->birthday;

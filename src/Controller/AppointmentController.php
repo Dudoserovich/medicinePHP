@@ -2,65 +2,108 @@
 
 namespace App\Controller;
 
+use App\Entity\Doctor;
+use App\Entity\Patient;
 use App\Repository\DoctorRepository;
+use App\Repository\DoctorScheduleRepository;
+use App\Repository\PatientRepository;
 use App\Repository\ScheduleRepository;
 use App\Repository\SpecializationRepository;
 use App\Repository\VisitRepository;
+use App\Service\DateTime;
+use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class AppointmentController extends AbstractController
 {
-    #[Route('/appointment', name: 'app_appointment')]
-    public function index(SpecializationRepository $specializationRepository,
-                          DoctorRepository         $doctorRepository,
+    #[Route('/', name: 'app_appointment')]
+    public function index(Request                  $request,
+                          SpecializationRepository $specializationRepository,
+                          DoctorScheduleRepository $doctorScheduleRepository,
                           ScheduleRepository       $scheduleRepository,
-                          VisitRepository          $visitRepository): Response
+                          DoctorRepository         $doctorRepository): Response
     {
+        # Получение всех специализаций
         $specs = $specializationRepository->findAll();
-        $doctors = $doctorRepository->findAllOrderBy();
 
-        # Доступные даты
-        $firstDayOfMonth = strtotime("first day of this month");
-        $strFirstDayOfMonth = date("Y-m-d", $firstDayOfMonth);
-        $regexFirstDayOfMonth = mb_substr($strFirstDayOfMonth, start: 0, length: 8) . '%';
-        $s_dates = $scheduleRepository->findDaysByMonthRegex($regexFirstDayOfMonth);
-        $daysConverted = array_map(
+        # Вытягиваем специализацию
+        $spec_get = $request->query->get('Специализация', null);
+        # Вытягиваем Дату
+        $date_with_count_get = $request->query->get('Дата', null);
+        $date_get = explode(" ", $date_with_count_get)[0];
+
+        // Получение свободных дат, больших текущей(+ времени) для каждой специализации
+        $date = new DateTimeImmutable();
+        $date_now = $date->format('Y-m-d');
+        $dates = $doctorScheduleRepository->findCountRegAppointment($spec_get, $date_now);
+        $datesConverted = array_map(
             fn(array $day): array => [
                 "date" => $day['s_date']->format('d.m.Y'),
+                "option" => "Свободно: " . $day['count_reg_app'],
             ],
-            $s_dates
+            $dates
         );
 
-        $times = $scheduleRepository->findTimesByStartOfMonthRegex($strFirstDayOfMonth);
-        $timesConverted = array_map(
-            fn(array $day): array => [
-                "date" => $day['starting']->format('H:i:s'),
-            ],
-            $times
-        );
-//        print_r($timesConverted);
+        # Получение всех времён выбранной даты
+        if ($date_get != '') {
+            $times = $scheduleRepository->findTimesByStartOfMonthRegex($date_get);
+            $all_times = array_map(
+                fn(array $time): array => [
+                    "date" => $time['starting']->format('H:i'),
+                ],
+                $times
+            );
+        } else $all_times = [];
 
-        $currDate = new \DateTime('now');
+        # Матрица Врачи/время
+        if ($date_get != '' or $spec_get != '') {
+            # Обработка списка врачей
+            $doctors = $doctorScheduleRepository
+                ->findDoctorsByDayAndSpec($date_get, $spec_get);
 
-        $startingAndFullNameUnconvertedArray = $visitRepository->findScheduleStartingAndFullName($currDate);
-        $startingAndFullNameConvertedArray = array_map(
-            fn(array $timeDoc): array => [
-                "date" => $timeDoc['starting']->format('H:i:s'),
-                "full_name" => $timeDoc['full_name'],
-            ],
-            $startingAndFullNameUnconvertedArray
-        );
+            $doctorsConvert = [];
+            foreach ($doctors as $doctor) {
+                $newDoctorEntity = new Doctor();
+                $newDoctorEntity
+                    ->setFullName($doctor['full_name']);
+                $doctorsConvert[] = $newDoctorEntity;
+            }
+
+            # === Формируем матрицу ===
+            # Формируем строковый вид текущей даты
+            $selectedDate = strtotime($date_get);
+            $selectedDateStr = date("Y-m-d", $selectedDate);
+
+            # Матрица на основе выбранной специализации и времени
+            $matrix = $doctorScheduleRepository->getMatrixSpecDate($spec_get, $selectedDateStr);
+            $matrixConverted = array_map(
+                fn(array $dayDoc): array => [
+                    "date" => $dayDoc['starting']->format('H:i'),
+                    "full_name" => $dayDoc['full_name'],
+                    "patient" => $dayDoc['patient']
+                ],
+                $matrix
+            );
+//            print_r($matrixConverted);
+            # ======
+        } else {
+            $doctorsConvert = [];
+            $matrixConverted = [];
+            $all_times = [];
+        }
 
         return $this->render('appointment/index.html.twig',
-            ['currentPath' => '/schedule',
-                'specs' => ['Специализация' => $specs, 'Даты' => $daysConverted],
-//                'selectsArray' => [],
-                'doctors' => $doctors,
-                'days' => $timesConverted,
-                'matrix' => $startingAndFullNameConvertedArray
+            ['currentPath' => '/',
+                'specs' => ['Специализация' => $specs, 'Дата' => $datesConverted],
+                'currSelects' => ['Специализация' => $spec_get, 'Дата' => $date_get],
+                'doctors' => $doctorsConvert,
+                'days' => $all_times,
+                'matrix' => $matrixConverted
             ]
         );
     }
+
 }

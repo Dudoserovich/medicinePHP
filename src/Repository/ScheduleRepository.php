@@ -60,35 +60,11 @@ class ScheduleRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('s')
             ->select('DISTINCT s.starting')
-            ->where("to_char(s.s_date,'yyyy-mm-dd') = :date")
+            ->where("to_char(s.s_date,'dd.mm.yyyy') = :date")
             ->setParameter('date', $month)
             ->orderBy('s.starting', 'ASC')
             ->getQuery()
             ->getResult();
     }
 
-//    /**
-//     * @return Schedule[] Returns an array of Schedule objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('s.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Schedule
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
 }

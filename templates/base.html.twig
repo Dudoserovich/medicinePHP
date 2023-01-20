@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Welcome!{% endblock %}</title>
@@ -38,7 +38,7 @@
             </li>
             <li><a href="{{ path('app_appointment') }}"
                    class="nav-link px-2
-                        {% if '/appointment' in currentPath %}
+                        {% if '/' == currentPath %}
                             {{ "active" }}
                         {% endif %}">
                     Запись на приём

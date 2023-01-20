@@ -17,12 +17,203 @@
 
     </div>
 
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="exampleModalLabel">Запись на приём</h4>
+                    <input type="hidden" id="doctor-name-hidden">
+                    <input type="hidden" id="time-hidden">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="recipient-name" class="col-form-label">Полис:</label>
+                            <input type="text" class="form-control"
+                                   id="policy" name="policy" onfocusout="findPolicy()">
+                        </div>
+                        <div class="mb-3">
+                            <label for="message-text" class="col-form-label">ФИО:</label>
+                            <input class="form-control" id="full_name" name="fio" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message-text" class="col-form-label">Пол:</label>
+                            <select disabled id="sex" name="sex">
+                                <option>М</option>
+                                <option>Ж</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message-text" class="col-form-label">Адрес:</label>
+                            <input class="form-control" id="address" name="address" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message-text" class="col-form-label">Дата рождения:</label>
+                            <input type="date" id="birthday" name="birthday"
+                                   value=""
+                                   min="1970-01-01" max="2023-12-31"
+                                   disabled
+                            >
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" id="submit-form">Записать</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <style>
         .select-block {
             justify-content: start;
         }
     </style>
-
     </body>
+
+    <script>
+        // Запись к врачу на приём
+        let recordsApp = document.querySelectorAll('.btn')
+
+        recordsApp.forEach((record) => {
+            if (!record.classList.contains('btn-danger')) {
+                record.setAttribute('data-toggle', 'modal')
+                record.setAttribute('data-target', '#myModal')
+
+                record.addEventListener("click", (e) => {
+                    // data-toggle="modal" data-target="#myModal"
+                    editDataModal(e.target)
+                    // console.log(e.target)
+                })
+            }
+        })
+
+        let submitForm = document.getElementById('submit-form')
+        submitForm.addEventListener("click", (e) => {
+            let date = document.querySelector('.select-block > div:nth-child(2) select')
+            date = date.value.split(' ')[0]
+            let doctor_name = document.getElementById('doctor-name-hidden').value
+            let time = document.getElementById('time-hidden').value
+
+            let policy = document.getElementById('policy').value
+            let full_name = document.getElementById('full_name').value
+            let sex = document.getElementById('sex').value
+            let address = document.getElementById('address').value
+            let birthday = document.getElementById('birthday').value
+
+            let hrefPost = window.location.origin + window.location.pathname + 'new_visit'
+
+            if (!policy.trim() || !full_name.trim() || !sex.trim() ||
+                !address.trim() || !birthday.trim())
+            {
+                alert('Есть незаполненные данные')
+                return
+            }
+
+            $.ajax({
+                type: "POST",
+                url: hrefPost,
+                data: {
+                    'doctor_name': doctor_name,
+                    'date': date,
+                    'time': time,
+                    'policy': policy,
+                    'full_name': full_name,
+                    'sex': sex === 'М',
+                    'address': address,
+                    'birthday': birthday
+                },
+                dataType: "json",
+                success: function (result) {
+                    console.log(result)
+                    window.location.reload()
+                }
+            });
+        })
+
+        // Подстановка данных о выбранной записи
+        function editDataModal(button) {
+            // console.log('hui')
+            let myModal = document.getElementById('myModal')
+            // Button that triggered the modal
+            let row_key = button.getAttribute('row-key')
+            let column_key = button.getAttribute('column-key')
+
+            let row = document.querySelector('[row-key="' + row_key + '"][column-key="' + 1 + '"]')
+            let column = document.querySelector('[row-key="' + 1 + '"][column-key="' + column_key + '"]')
+            console.log(column_key)
+            console.log(column)
+
+            let doctor_name = document.getElementById('doctor-name-hidden')
+            let time = document.getElementById('time-hidden')
+
+            doctor_name.value = column.textContent.trim()
+            time.value = row.textContent.trim()
+
+            // Update the modal's content.
+            let modalTitle = myModal.querySelector('.modal-title')
+            // let modalBodyInput = exampleModal.querySelector('.modal-body input')
+
+            modalTitle.textContent = 'Запись на приём ' + '(' + row.textContent.trim() + ', ' + column.textContent.trim() + ')'
+            // modalBodyInput.value = recipient
+        }
+
+        function findPolicy() {
+            let policy = document.getElementById('policy').value
+            // console.log(policy);
+            //  /policy
+
+            let hrefPost = window.location.origin + window.location.pathname + 'policy'
+
+            $.ajax({
+                type: "POST",
+                url: hrefPost,
+                data: {'policy': policy},
+                dataType: "json",
+                success: function (result) {
+                    let full_name = document.getElementById('full_name')
+                    let sex = document.getElementById('sex')
+                    let address = document.getElementById('address')
+                    let birthday = document.getElementById('birthday')
+
+                    // Если вернулся объект, подставляем значения
+                    if (result !== 'Полиса нет') {
+
+                        full_name.value = result['full_name']
+                        sex.value = result['sex'] ? 'М' : 'Ж'
+
+                        address.value = result['address']
+
+                        birthday.value = result['birthday']['date'].split(' ')[0]
+                        // console.log(birthdayStr)
+                        // console.log(result['sex'])
+                        // sex.value = result['sex']
+                        // console.log(result['sex'])
+                    } else if (policy.length === 16) {
+                        full_name.disabled = false
+                        full_name.value = ''
+
+                        sex.disabled = false
+                        sex.value = 'М'
+
+                        address.disabled = false
+                        address.value = ''
+
+                        birthday.disabled = false
+                        birthday.value = ''
+                    }
+                    // console.log(policy.length)
+                    // window.location.reload()
+                }
+            });
+
+        }
+    </script>
+    {#    {% block javascripts %} #}
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    {#    {% endblock %} #}
 
 {% endblock %}
